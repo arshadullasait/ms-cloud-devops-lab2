@@ -38,25 +38,13 @@ The page at http://localhost:8080, reached with kubectl port-forward. A port-for
 
 **Trap 1 - the local image.** The Pods went to ErrImagePull and then ImagePullBackOff. The Events said docker.io/library/hello-app:v1 was not found. The nodes are separate containers with their own image storage, so they cannot see the image in my laptop Docker. A name without a username points to an official Docker Hub image, which does not exist. Pushing it as arshadsait/hello-app:v1 fixed it.
 
-**Trap 2 - the selector typo.** With the Service selector set to helo-app, the EndpointSlice showed <unset> for PORTS and ENDPOINTS. No Pod has that label, so the Service had nowhere to send traffic, even though the Service and the Pods both existed. After fixing the typo, the Pod IPs came back on port 80.
+**Trap 2 - the selector typo.** With the Service selector set to helo-app, the EndpointSlice showed `<unset>` for PORTS and ENDPOINTS. No Pod has that label, so the Service had nowhere to send traffic, even though the Service and the Pods both existed. After fixing the typo, the Pod IPs came back on port 80.
 
 **Trap 3 - the wrong targetPort.** With targetPort 8080, the EndpointSlice still listed the Pod IPs, but with port 8080. The Service found the Pods, but nginx listens on port 80, so nothing was listening on 8080. Setting targetPort back to 80 fixed it.
 
-**Trap 4 - the EXTERNAL-IP address.** On my kind cluster the EXTERNAL-IP stays <pending>, because kind has no load balancer to assign one. On Docker Desktop the address would be inside Docker private network and not reachable from the laptop, and on a cloud provider it would be a real public address. I used kubectl port-forward and opened http://localhost:8080.
+**Trap 4 - the EXTERNAL-IP address.** On my kind cluster the EXTERNAL-IP stays `<pending>`, because kind has no load balancer to assign one. On Docker Desktop the address would be inside Docker private network and not reachable from the laptop, and on a cloud provider it would be a real public address. I used kubectl port-forward and opened http://localhost:8080.
 
 ## 6. Your YAML vs the generated YAML
 
 The dry-run output has fields that are not in my file, such as creationTimestamp: null and status (loadBalancer: {}). They are empty or default values. Kubernetes fills in defaults for anything missing, so my shorter file still works.
-## 5. The four traps
 
-**Trap 1 - the local image.** The Pods went to ErrImagePull and then ImagePullBackOff. The Events said docker.io/library/hello-app:v1 was not found. The nodes are separate containers with their own image storage, so they cannot see the image in my laptop Docker. A name without a username points to an official Docker Hub image, which does not exist. Pushing it as arshadsait/hello-app:v1 fixed it.
-
-**Trap 2 - the selector typo.** With the Service selector set to helo-app, the EndpointSlice showed <unset> for PORTS and ENDPOINTS. No Pod has that label, so the Service had nowhere to send traffic, even though the Service and the Pods both existed. After fixing the typo, the Pod IPs came back on port 80.
-
-**Trap 3 - the wrong targetPort.** With targetPort 8080, the EndpointSlice still listed the Pod IPs, but with port 8080. The Service found the Pods, but nginx listens on port 80, so nothing was listening on 8080. Setting targetPort back to 80 fixed it.
-
-**Trap 4 - the EXTERNAL-IP address.** On my kind cluster the EXTERNAL-IP stays <pending>, because kind has no load balancer to assign one. On Docker Desktop the address would be inside Docker private network and not reachable from the laptop, and on a cloud provider it would be a real public address. I used kubectl port-forward and opened http://localhost:8080.
-
-## 6. Your YAML vs the generated YAML
-
-The dry-run output has fields that are not in my file, such as creationTimestamp: null and status (loadBalancer: {}). They are empty or default values. Kubernetes fills in defaults for anything missing, so my shorter file still works.
